@@ -1,13 +1,14 @@
 # Discord self-bot scripts
 
-Discord claims to care about privacy but they don't really, just read their vague Privacy Policy.
+Discord claims to care about privacy but they don't really: just read their vague Privacy Policy.
 It's also my opinion that they don't have a sustainable business model, so when the VC money runs out and time comes to monetize, I don't find it unreasonable that they would resort to selling user data.
 That's why I don't trust them with my message history, so I erase it regularly.
 There is also the risk of account theft, doxing, and so on. I also don't want to come back in 15 years to read cringe.
 Thus I firmly believe message history should be ephemeral.
 
 These scripts are for self-botting; the auth token is NOT a bot API key; you need to extract this from your client.
-It's a clear ToS violation so I claim no responsibility if you get banned for using these. Use at your own risk and discretion!
+This is Discord ToS violation so I claim no responsibility if you get banned for using these, and I only provide these scripts for educational purpose.
+Use at your own risk and discretion!
 
 ### Self-delete Javascript-let
 
@@ -23,7 +24,7 @@ authToken = "";
 function grabAuthToken() {
     if (authToken.length === 0) {
         // Lmao bypass token security measures
-        window.onbeforeunload = grabAuthToken;
+        window.onbeforeunload = grabAutithToken;
         window.location.reload();
 
         // yoink
