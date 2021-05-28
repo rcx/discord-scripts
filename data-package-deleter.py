@@ -7,13 +7,13 @@ import json
 import os
 import csv
 
-baseurl = "https://discordapp.com/api/v6"
+baseurl = "https://discordapp.com/api/v9"
 auth_token = 'mfa.your.token.goes.here'
 delay = 1.5
 
 def api_request(path, method='GET'):
     headers = {
-        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.306 Chrome/78.0.3904.130 Electron/7.1.11 Safari/537.36",
+        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.309 Chrome/83.0.4103.122 Electron/9.3.5 Safari/537.36",
         'Authorization': auth_token
     }
 
