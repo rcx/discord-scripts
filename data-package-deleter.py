@@ -8,12 +8,16 @@ import os
 import csv
 
 baseurl = "https://discordapp.com/api/v9"
-auth_token = 'mfa.your.token.goes.here'
+auth_token = os.getenv('DISCORD_AUTH_TOKEN')
 delay = 1.5
+
+if not auth_token:
+    print('Please set environment variable DISCORD_AUTH_TOKEN')
+    exit(1)
 
 def api_request(path, method='GET'):
     headers = {
-        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.309 Chrome/83.0.4103.122 Electron/9.3.5 Safari/537.36",
+        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9002 Chrome/83.0.4103.122 Electron/9.3.5 Safari/537.36",
         'Authorization': auth_token
     }
 
@@ -36,6 +40,18 @@ def channel_messages(channel_id):
 def delete_message(channel_id, message_id):
     return api_request('/channels/' + channel_id + '/messages/' + message_id, method='DELETE')
 
+def delete_message_with_retry(channel_id, message_id):
+    while True:
+        resp = delete_message(channel_id, message_id)
+        if resp.status_code >= 300:
+            print('! Got ' + str(resp.status_code))
+        if resp.status_code == 429: # too many requests
+            delay += 0.5
+            print('Bumping delay to ', delay)
+            time.sleep(10.0)
+            continue
+        return resp
+
 if not os.path.exists('deleted.txt'):
     open('deleted.txt', 'w+').close()
 cache = open('deleted.txt', 'r+')
@@ -44,7 +60,7 @@ cache.seek(0, os.SEEK_END) # ??? avoid IOerror when using a r+ for write after r
 with open('messages/index.json', 'r', encoding='utf-8') as index:
     index = json.load(index)
 for channel_id in index:
-    with open('messages/' + channel_id + '/channel.json', 'r', encoding='utf-8') as channel:
+    with open('messages/c' + channel_id + '/channel.json', 'r', encoding='utf-8') as channel:
         channel = json.load(channel)
     name = ''
     if 'guild' in channel:
@@ -63,7 +79,7 @@ for channel_id in index:
         print('* This whole channel is done already')
         continue
     num_404s = 0
-    with open('messages/' + channel_id + '/messages.csv', 'r', encoding='utf-8') as messages:
+    with open('messages/c' + channel_id + '/messages.csv', 'r', encoding='utf-8') as messages:
         messages = csv.reader(messages, delimiter=",", quotechar='"')
         next(messages, None) # skip header
         for message in messages:
@@ -72,7 +88,7 @@ for channel_id in index:
             if message_id in already_deleted:
                 print('* Already deleted')
                 continue
-            resp = delete_message(channel_id, message_id)
+            resp = delete_message_with_retry(channel_id, message_id)
             if resp.status_code >= 300:
                 print('! Got ' + str(resp.status_code))
             if resp.status_code == 404:
@@ -82,4 +98,6 @@ for channel_id in index:
                     break
             if (200 <= resp.status_code) < 300 or (resp.status_code == 404):
                 cache.write(message_id + '\n')
+                cache.flush()
     cache.write(channel_id + '\n')
+    cache.flush()
