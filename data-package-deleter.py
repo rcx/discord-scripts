@@ -41,6 +41,7 @@ def delete_message(channel_id, message_id):
     return api_request('/channels/' + channel_id + '/messages/' + message_id, method='DELETE')
 
 def delete_message_with_retry(channel_id, message_id):
+    global delay
     while True:
         resp = delete_message(channel_id, message_id)
         if resp.status_code >= 300:
